@@ -46,13 +46,35 @@ export async function getFeedUrlsFromNotion() {
   return feeds;
 }
 
+// Fetch existing items
+async function fetchExistingItems() {
+  try {
+    const response = await notion.databases.query({
+      database_id: NOTION_READER_DATABASE_ID,
+    });
+    return response.results.map(item => ({
+      title: item.properties.Title.title[0].text.content,
+      link: item.properties.Link.url,
+    }));
+  } catch (error) {
+    console.error('Error fetching existing items:', error);
+    return [];
+  }
+}
+
+// Add item only if it doesn't exist
 export async function addFeedItemToNotion(notionItem) {
   const { title, link, content } = notionItem;
+  const existingItems = await fetchExistingItems();
 
-  const notion = new Client({
-    auth: NOTION_API_TOKEN,
-    logLevel,
-  });
+  const isDuplicate = existingItems.some(
+    item => item.title === title && item.link === link
+  );
+
+  if (isDuplicate) {
+    console.log('Duplicate item found, skipping:', title);
+    return;
+  }
 
   try {
     await notion.pages.create({
@@ -76,7 +98,7 @@ export async function addFeedItemToNotion(notionItem) {
       children: content,
     });
   } catch (err) {
-    console.error(err);
+    console.error('Error adding item to Notion:', err);
   }
 }
 

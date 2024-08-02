@@ -1,8 +1,5 @@
 import getNewFeedItems from './feed';
-import {
-  addFeedItemToNotion,
-  deleteOldUnreadFeedItemsFromNotion,
-} from './notion';
+import { addFeedItemToNotion, deleteOldUnreadFeedItemsFromNotion } from './notion';
 import htmlToNotionBlocks from './parser';
 
 async function index() {
